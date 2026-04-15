@@ -211,7 +211,13 @@ export function Dashboard() {
         {/* Map - Main Content */}
         <div className="flex-1 flex flex-col">
           <div className="flex-1 lg:m-4 mt-4 mx-4 lg:mt-0">
-            <MapComponent userLocation={location} requests={requests} />
+            <MapComponent 
+              userLocation={location} 
+              requests={requests.map(r => ({
+                ...r,
+                description: r.desc
+              }))} 
+            />
           </div>
 
           {/* Bottom Info Bar - Mobile */}
