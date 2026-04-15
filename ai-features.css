@@ -1,0 +1,227 @@
+/* ai-features.css */
+
+.ai-badge {
+    background: linear-gradient(135deg, #FF6B6B, #845EC2);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+    margin-right: 6px;
+    box-shadow: 0 2px 5px rgba(255,107,107,0.4);
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    0% { box-shadow: 0 0 5px rgba(255,107,107,0.4); }
+    100% { box-shadow: 0 0 15px rgba(132,94,194,0.8); }
+}
+
+/* ── ROUTE PANEL (helper map overlay) ── */
+.route-info-panel {
+    position: absolute;
+    bottom: 16px;
+    left: 12px;
+    right: 12px;
+    background: var(--bg2);
+    border-radius: 16px;
+    border: 1px solid var(--border2);
+    z-index: 1000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+.route-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 6px;
+    border-bottom: 1px solid var(--border);
+}
+
+.route-panel-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.route-dest {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+}
+
+.route-options {
+    display: flex;
+    gap: 0;
+}
+
+.route-option {
+    flex: 1;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-right: 1px solid var(--border);
+}
+
+.route-option:last-child { border-right: none; }
+
+.route-option.active { background: rgba(37,99,235,0.06); }
+
+.route-option-label {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+
+.route-safe .route-option-label { color: #00C853; }
+.route-fast .route-option-label { color: #FF9800; }
+
+.route-option-stats {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.route-option-stats span:first-child {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--font-mono);
+}
+
+.route-eta-big {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+}
+
+.route-option-sub {
+    font-size: 10px;
+    color: var(--text3);
+    font-family: var(--font-mono);
+}
+
+/* ── SEEKER ETA TRACKER (Ola/Zomato style) ── */
+.eta-tracker {
+    background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(0,200,83,0.06));
+    border: 1px solid rgba(37,99,235,0.2);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 8px 0;
+}
+
+.eta-tracker-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.eta-helper-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid #2563eb;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.eta-helper-info {
+    flex: 1;
+}
+
+.eta-helper-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.eta-helper-dist {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--font-mono);
+}
+
+.eta-countdown {
+    text-align: center;
+    background: #2563eb;
+    color: white;
+    border-radius: 10px;
+    padding: 6px 12px;
+    min-width: 52px;
+    flex-shrink: 0;
+}
+
+.eta-min {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.eta-label {
+    font-size: 9px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.85;
+}
+
+/* Progress bar */
+.eta-progress-bar {
+    height: 4px;
+    background: var(--bg4);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.eta-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb, #00C853);
+    border-radius: 2px;
+    transition: width 1s linear;
+}
+
+/* Status row */
+.eta-status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.eta-dot-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00C853;
+    flex-shrink: 0;
+    animation: pulse 1.5s infinite;
+}
+
+.eta-status-text {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--font-mono);
+}
+
+/* ── MISC ── */
+.prediction-alert {
+    background: rgba(255,152,0,0.15);
+    border: 1px solid var(--amber);
+    color: var(--amber);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideIn 0.3s ease;
+}

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Relief-Map · Hyper-Local Aid Hub</title>
+  <meta name="description" content="Real-time hyper-local disaster relief coordination within 2km">
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <!-- Leaflet Map -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+  <script>
+    // MASSIVE CACHE BUSTER
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          registration.unregister();
+        }
+      });
+      caches.keys().then(function(names) {
+        for (let name of names) caches.delete(name);
+      });
+    }
+  </script>
+  <!-- i18n Setup - Load before app.js -->
+  <script src="strings.js?v=18"></script>
+  <script src="i18n.js?v=18"></script>
+  <!-- Firebase -->
+  <script type="module" src="app.js?v=18"></script>
+  <link rel="stylesheet" href="style.css?v=18">
+  <!-- AI Features & Routing imports -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js"></script>
+  <link rel="stylesheet" href="ai-features.css?v=18">
+  <script src="ai-features.js?v=18" defer></script>
+</head>
+<body>
+
+<!-- ── AUTH SCREEN ── -->
+<div id="screen-auth">
+  <div class="auth-logo">
+    <div class="auth-logo-icon">🗺</div>
+    <div class="auth-logo-text">
+      <h1>Relief-Map</h1>
+      <p>Hyper-local crisis aid hub</p>
+    </div>
+  </div>
+  <div class="auth-card">
+    <h2>Sign in to help or get help</h2>
+    <p>Connect with people within 2 km during local emergencies. Real-time, GPS-based, community-driven.</p>
+    <ul class="features-list">
+      <li>Post needs — food, water, shelter, medical</li>
+      <li>See active requests within 2 km of you</li>
+      <li>Claim and resolve requests in real time</li>
+      <li>Works offline, syncs when back online</li>
+    </ul>
+    <button class="btn-google" onclick="loginGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+      Continue with Google
+    </button>
+  </div>
+</div>
+
+<!-- ── APP SCREEN ── -->
+<div id="screen-app" style="display:none; height:100vh; display:none; flex-direction:column">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <button class="btn btn-ghost" id="back-btn" style="padding:4px 10px; font-size:14px; font-weight:bold; margin-right:8px; display:none; color:var(--text); background:rgba(0,0,0,0.05); border-radius:8px;" onclick="goBack()">← Back</button>
+    <div class="topbar-logo">
+      <span style="color:var(--accent)">📍</span>
+      <span>Relief<span class="logo-dot">·</span>Map</span>
+    </div>
+    <div class="loc-badge">
+      <div class="live-dot"></div>
+      <span id="loc-display">Locating…</span>
+    </div>
+    <div class="topbar-right" style="display:flex; gap:8px; align-items:center;">
+      <button class="btn btn-danger" style="padding:4px 8px;font-size:11px;font-weight:bold;" onclick="document.getElementById('sos-modal').style.display='flex'">SOS</button>
+      <div id="user-info" style="display:flex; align-items:center; flex-shrink:0;"></div>
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:12px; z-index:10; background:var(--bg3); flex-shrink:0;" onclick="window.logout()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Main scroll area -->
+  <div class="scroll-area" id="main-scroll">
+
+    <!-- Feed tab -->
+    <div id="tab-feed" class="tab-content" style="display:block">
+      <div class="filter-row">
+        <button class="filter-chip active" onclick="setFilter('all', this)">All</button>
+        <button class="filter-chip" onclick="setFilter('food', this)">🍱 Food</button>
+        <button class="filter-chip" onclick="setFilter('water', this)">💧 Water</button>
+        <button class="filter-chip" onclick="setFilter('medical', this)">🚑 Medical</button>
+        <button class="filter-chip" onclick="setFilter('shelter', this)">🏠 Shelter</button>
+        <button class="filter-chip" onclick="setFilter('charging', this)">🔋 Charging</button>
+        <button class="filter-chip" onclick="setFilter('other', this)">📦 Other</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 1rem 4px">
+        <span class="section-label">Active nearby · <span id="feed-count">0</span> posts</span>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">AI Priority Sorted</span>
+      </div>
+      <div class="feed-list" id="feed-list">
+        <div class="empty-state"><div class="empty-icon">📡</div><div>Getting your location…</div></div>
+      </div>
+    </div>
+
+    <!-- Map tab -->
+    <div id="tab-map" class="tab-content" style="position:relative; display:flex; flex-direction:column; height:100%;">
+      <div id="route-panel" class="route-info-panel" style="display:none;"></div>
+      <div class="map-container">
+        <div id="leaflet-map"></div>
+      </div>
+    </div>
+
+    <!-- Post tab -->
+    <div id="tab-post" class="tab-content">
+      <div class="tab-inner">
+        <div class="form-section">
+          <div class="form-title">Post a need</div>
+
+          <div class="form-group">
+            <label class="form-label">Type of need</label>
+            <select class="form-select" id="p-type">
+              <option value="food">🍱 Food</option>
+              <option value="water">💧 Water</option>
+              <option value="shelter">🏠 Shelter</option>
+              <option value="medical">🚑 Medical help</option>
+              <option value="charging">🔋 Phone / device charging</option>
+              <option value="other">📦 Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="p-desc" placeholder="Describe what you need as clearly as possible…"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Quantity / details</label>
+            <input class="form-input" id="p-qty" placeholder="e.g. 4 people, 2 days' supply…">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Urgency</label>
+            <div class="urg-row">
+              <button class="urg-btn" data-urgency="low" onclick="setUrgency('low')">Low</button>
+              <button class="urg-btn active" data-urgency="medium" onclick="setUrgency('medium')">Medium</button>
+              <button class="urg-btn" data-urgency="high" onclick="setUrgency('high')">High</button>
+            </div>
+          </div>
+
+          <div class="info-note">📍 Your GPS coordinates will be auto-attached to this post. Only people within 2 km will see it.</div>
+
+          <button class="btn btn-primary" style="width:100%;padding:12px" id="submit-btn" onclick="submitRequest()">Post need to nearby helpers</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- My posts tab -->
+    <div id="tab-mine" class="tab-content">
+      <div style="padding:8px 1rem 4px">
+        <span class="section-label">My posts & claims</span>
+      </div>
+      <div class="feed-list" id="mine-list">
+        <div class="empty-state"><div class="empty-icon">📋</div><div>No posts yet</div></div>
+      </div>
+    </div>
+
+    <!-- Profile tab -->
+    <div id="tab-profile" class="tab-content">
+      <div class="tab-inner">
+        <div class="form-section">
+          <div id="profile-block"></div>
+
+          <div class="form-group">
+            <label class="form-label">Your role</label>
+            <div class="role-row">
+              <button class="role-btn active" data-role="helper" onclick="updateRole('helper')">🤝 Helper<br><small style="font-size:11px;opacity:0.6">I can offer aid</small></button>
+              <button class="role-btn" data-role="seeker" onclick="updateRole('seeker')">🙋 Seeker<br><small style="font-size:11px;opacity:0.6">I need help</small></button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" id="lang-label">Language</label>
+            <select class="form-select" id="lang-selector" onchange="window.changeLanguage(this.value)" style="font-family: var(--font-text); font-size: 14px;">
+              <option value="en">English</option>
+              <option value="hi">हिन्दी (Hindi)</option>
+              <option value="mr">मराठी (Marathi)</option>
+            </select>
+          </div>
+
+          <div class="section-label" style="margin-top:1.5rem;margin-bottom:12px">Admin panel</div>
+          <div id="admin-section" style="display:none">
+            <div id="admin-list">
+              <div class="empty-state"><div style="font-size:13px">Nearby posts management</div></div>
+            </div>
+            <button class="btn" style="width:100%;margin-top:12px" onclick="renderAdminPanel()">Refresh admin view</button>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <button class="btn btn-danger" style="width:100%" onclick="window.logout()">Sign out</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end scroll area -->
+
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" data-tab="feed" onclick="switchTab('feed')">
+      <span class="nav-icon">📡</span>Feed
+    </button>
+    <button class="nav-btn" data-tab="map" onclick="switchTab('map')">
+      <span class="nav-icon">🗺</span>Map
+    </button>
+    <button class="nav-btn" data-tab="post" onclick="switchTab('post')">
+      <span class="nav-icon">✚</span>Post
+    </button>
+    <button class="nav-btn" data-tab="mine" onclick="switchTab('mine')">
+      <span class="nav-icon">📋</span>My Posts
+    </button>
+    <button class="nav-btn" data-tab="profile" onclick="switchTab('profile');loadProfile()">
+      <span class="nav-icon">👤</span>Profile
+    </button>
+  </div>
+
+</div><!-- end screen-app -->
+
+<div class="toast" id="toast"></div>
+
+<!-- ── SOS EMERGENCY MODAL ── -->
+<div id="sos-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:var(--bg2); width:100%; max-width:400px; border-radius:var(--r2); border:1px solid #ef5350; overflow:hidden;">
+    <div style="background:#ef5350; padding:15px; text-align:center; position:relative;">
+      <h3 style="color:white; margin:0; font-family:var(--font-display);">🚨 EMERGENCY CONTACTS</h3>
+      <button onclick="document.getElementById('sos-modal').style.display='none'" style="position:absolute; right:15px; top:15px; background:transparent; border:none; color:white; font-size:20px; cursor:pointer;">&times;</button>
+    </div>
+    <div style="padding:16px; display:flex; flex-direction:column; gap:8px; max-height:70vh; overflow-y:auto;">
+      <div style="font-size:10px; color:#aaa; font-family:monospace; text-transform:uppercase; letter-spacing:1px; padding:4px 0 2px;">Universal</div>
+      <a href="tel:112" class="btn btn-danger" style="display:flex; justify-content:space-between; padding:11px 14px; font-size:14px;"><span>🆘 Universal Emergency (Police / Fire / Ambulance)</span> <span>112</span></a>
+
+      <div style="font-size:10px; color:#aaa; font-family:monospace; text-transform:uppercase; letter-spacing:1px; padding:6px 0 2px;">Police &amp; Fire</div>
+      <a href="tel:100" class="btn btn-ghost" style="display:flex; justify-content:space-between; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);"><span>👮 Police</span> <span>100</span></a>
+      <a href="tel:101" class="btn btn-ghost" style="display:flex; justify-content:space-between; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);"><span>🚒 Fire Brigade</span> <span>101</span></a>
+
+      <div style="font-size:10px; color:#aaa; font-family:monospace; text-transform:uppercase; letter-spacing:1px; padding:6px 0 2px;">Medical</div>
+      <a href="tel:102" class="btn btn-ghost" style="display:flex; justify-content:space-between; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);"><span>🚑 Ambulance</span> <span>102</span></a>
+      <a href="tel:108" class="btn btn-ghost" style="display:flex; justify-content:space-between; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);"><span>🚑 Ambulance (alternate)</span> <span>108</span></a>
+      <a href="tel:104" class="btn btn-ghost" style="display:flex; justify-content:space-between; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);"><span>🏥 Health Helpline</span> <span>104</span></a>
+
+      <div style="font-size:10px; color:#aaa; font-family:monospace; text-transform:uppercase; letter-spacing:1px; padding:6px 0 2px;">Disaster Management</div>
+      <a href="tel:108" class="btn btn-ghost" style="display:flex; justify-content:space-between; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);"><span>🌪 Disaster Response</span> <span>108 / 112</span></a>
+      <a href="tel:1070" class="btn btn-ghost" style="display:flex; justify-content:space-between; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);"><span>🏛 State Disaster Management</span> <span>1070</span></a>
+      <a href="tel:1078" class="btn btn-ghost" style="display:flex; justify-content:space-between; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);"><span>🌊 Flood Relief</span> <span>1078</span></a>
+
+      <div style="font-size:10px; color:#aaa; font-family:monospace; text-transform:uppercase; letter-spacing:1px; padding:6px 0 2px;">Women &amp; Children</div>
+      <a href="tel:1091" class="btn btn-ghost" style="display:flex; justify-content:space-between; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);"><span>👩 Women Helpline</span> <span>1091</span></a>
+      <a href="tel:181" class="btn btn-ghost" style="display:flex; justify-content:space-between; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);"><span>👩 Women in Distress (State)</span> <span>181</span></a>
+      <a href="tel:1098" class="btn btn-ghost" style="display:flex; justify-content:space-between; padding:11px 14px; border:1px solid rgba(255,255,255,0.2);"><span>🧒 Child Helpline</span> <span>1098</span></a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // set initial urgency
+  window.STATE = window.STATE || {};
+  STATE.selectedUrgency = 'medium';
+
+  window.loadProfile = () => {
+    const user = STATE.user;
+    if (!user) return;
+    const el = document.getElementById('profile-block');
+    el.innerHTML = `
+      <div class="profile-header">
+        <img src="${user.photoURL||''}" onerror="this.style.display='none'" class="profile-avatar">
+        <div>
+          <div class="profile-name">${user.displayName}</div>
+          <div class="profile-email">${user.email}</div>
+        </div>
+      </div>
+    `;
+    // sync role buttons
+    const role = STATE.userProfile?.role || 'helper';
+    document.querySelectorAll('.role-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.role === role);
+    });
+    
+    // Show admin panel only for admins (you@yourmail.com or any admin you specify)
+    const isAdmin = user.email === 'utkarshnarwade2006@gmail.com'; // Change this to your admin email
+    document.getElementById('admin-section').style.display = isAdmin ? 'block' : 'none';
+  };
+</script>
+</body>
+</html>

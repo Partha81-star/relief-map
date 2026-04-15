@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can read/write their own profile
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Requests
+    match /requests/{requestId} {
+      // Anyone signed in within the system can read
+      allow read: if request.auth != null;
+
+      // Only signed-in users can create a request
+      allow create: if request.auth != null
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.desc is string
+        && request.resource.data.desc.size() > 0
+        && request.resource.data.desc.size() < 500
+        && request.resource.data.type in ['food','water','shelter','medical','charging','other']
+        && request.resource.data.urgency in ['low','medium','high'];
+
+      // Update rules
+      allow update: if request.auth != null && (
+        // Owner can update their own post (e.g. delete by resolving)
+        resource.data.createdBy == request.auth.uid
+        ||
+        // Helper can claim a pending request
+        (
+          resource.data.status == 'pending'
+          && request.resource.data.status == 'assigned'
+          && request.resource.data.claimedBy == request.auth.uid
+        )
+        ||
+        // Helper who claimed can resolve it
+        (
+          resource.data.status == 'assigned'
+          && resource.data.claimedBy == request.auth.uid
+          && request.resource.data.status == 'resolved'
+        )
+        ||
+        // Anyone can flag a post (increment flagCount)
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['flagCount','flagged'])
+        )
+      );
+
+      // Only owner can delete their own post
+      allow delete: if request.auth != null && resource.data.createdBy == request.auth.uid;
+    }
+  }
+}

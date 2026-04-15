@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-slate-800;
+  }
+
+  body {
+    @apply bg-slate-950 text-slate-50;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-glass backdrop-blur-md border border-glass rounded-xl;
+  }
+
+  .glass-light {
+    @apply bg-glass-light backdrop-blur-md border border-glass rounded-xl;
+  }
+
+  .btn-glass {
+    @apply bg-glass hover:bg-glass-light border border-glass hover:border-cyan-500/50 text-slate-50 transition-all duration-200;
+  }
+}
+
+/* Custom Animations */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glassmorphism {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(16px);
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.5);
+}
+
+/* Leaflet Overrides */
+.leaflet-container {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  border-radius: 1rem;
+}
+
+.leaflet-control-container {
+  font-family: "Inter", sans-serif;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(6, 182, 212, 0.2) !important;
+  backdrop-filter: blur(20px);
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  color: #f1f5f9;
+}
+
+.leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.95) !important;
+}
+
+.leaflet-marker-icon {
+  background: none !important;
+  border: none !important;
+}
+
+.leaflet-control {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(6, 182, 212, 0.2) !important;
+  backdrop-filter: blur(20px);
+  border-radius: 8px !important;
+}
+
+.leaflet-control a {
+  color: #06b6d4 !important;
+}
+
+.leaflet-control a:hover {
+  color: #22d3ee !important;
+  background-color: rgba(6, 182, 212, 0.1) !important;
+}
