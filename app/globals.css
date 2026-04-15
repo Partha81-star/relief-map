@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
+    --card: 224 71% 4%;
+    --card-foreground: 0 0% 98%;
+    --primary: 231 100% 60%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 100% 50%;
+    --secondary-foreground: 0 0% 3%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 186 100% 50%;
+    --accent-foreground: 210 40% 3%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 0 0% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 231 100% 60%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-50;
+  }
+  
+  * {
+    @apply border-border;
+  }
+}
+
+/* Glassmorphism effect */
+@layer components {
+  .glass {
+    @apply backdrop-blur-md bg-white/10 border border-white/20 rounded-lg;
+  }
+  
+  .glass-sm {
+    @apply backdrop-blur-sm bg-white/5 border border-white/10 rounded-md;
+  }
+  
+  .glass-lg {
+    @apply backdrop-blur-lg bg-white/15 border border-white/30 rounded-xl;
+  }
+  
+  /* Pulsar animation for location */
+  .location-pulse {
+    @apply animate-pulse-ring;
+  }
+  
+  /* Custom scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Leaflet map fixes */
+.leaflet-container {
+  background: #1e293b;
+}
+
+.leaflet-control {
+  @apply glass;
+}
+
+.leaflet-popup-content-wrapper {
+  @apply bg-slate-900 border border-indigo-500/30;
+}
+
+.leaflet-popup-content {
+  @apply text-slate-100;
+}
